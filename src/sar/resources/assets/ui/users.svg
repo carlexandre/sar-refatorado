@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title">
+  <title id="title">Usuários e acessos</title>
+  <g fill="none" stroke="#a855f7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="40" cy="24" r="13"/>
+    <path d="M13 68c2-18 12-27 27-27s25 9 27 27"/>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+[server]
+address = "127.0.0.1"
+enableCORS = true
+enableXsrfProtection = true
+headless = true
+enableStaticServing = false
+[browser]
+gatherUsageStats = false
+[theme]
+base = "dark"
+primaryColor = "#38BDF8"
+backgroundColor = "#0B111A"
+secondaryBackgroundColor = "#111A27"
+textColor = "#F3F7FB"
+linkColor = "#38BDF8"
+borderColor = "#26364A"
+baseRadius = "large"
+buttonRadius = "medium"
+font = "sans-serif"

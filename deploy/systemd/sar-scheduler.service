@@ -1,0 +1,19 @@
+[Unit]
+Description=SAR cron reconciler
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=sar-cron
+Group=sar
+WorkingDirectory=/opt/sar
+EnvironmentFile=/etc/sar/sar.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/sar/.venv/bin/sar sync-cron --launcher /usr/local/libexec/sar-run-schedule
+UMask=0077
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/sar /var/spool/cron
+StandardOutput=journal
+StandardError=journal

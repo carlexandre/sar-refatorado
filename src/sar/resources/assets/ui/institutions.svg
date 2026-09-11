@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title">
+  <title id="title">Instituições e grupos</title>
+  <g fill="none" stroke="#3498db" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="29" y="7" width="22" height="18" rx="3"/>
+    <rect x="7" y="55" width="22" height="18" rx="3"/>
+    <rect x="51" y="55" width="22" height="18" rx="3"/>
+    <path d="M40 25v16M18 41h44M18 41v14M62 41v14"/>
+  </g>
+</svg>

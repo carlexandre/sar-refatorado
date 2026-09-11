@@ -1,0 +1,9 @@
+[Unit]
+Description=Synchronize SAR schedule changes
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=30
+Persistent=true
+Unit=sar-scheduler.service
+[Install]
+WantedBy=timers.target

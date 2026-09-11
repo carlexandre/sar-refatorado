@@ -1,0 +1,31 @@
+[Unit]
+Description=SAR Streamlit
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sar
+Group=sar
+WorkingDirectory=/opt/sar
+EnvironmentFile=/etc/sar/sar.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=MPLCONFIGDIR=/var/lib/sar/matplotlib
+LoadCredentialEncrypted=zabbix-token:/etc/credstore.encrypted/sar-zabbix-token
+ExecStart=/opt/sar/.venv/bin/python -m streamlit run /opt/sar/app.py --server.address=127.0.0.1
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/sar
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+LockPersonality=true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

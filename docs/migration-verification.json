@@ -1,0 +1,43 @@
+{
+  "tables": {
+    "grupos": {
+      "source": 2,
+      "imported": 2,
+      "reconciliation": 0
+    },
+    "links": {
+      "source": 1,
+      "imported": 1,
+      "reconciliation": 0
+    },
+    "faturas_cadastradas": {
+      "source": 2,
+      "imported": 1,
+      "reconciliation": 1
+    },
+    "itens_fatura": {
+      "source": 0,
+      "imported": 0,
+      "reconciliation": 0
+    },
+    "itens_fatura_grupo": {
+      "source": 0,
+      "imported": 0,
+      "reconciliation": 0
+    },
+    "agendamentos": {
+      "source": 1,
+      "imported": 1,
+      "reconciliation": 0
+    },
+    "historico_relatorios": {
+      "source": 6,
+      "imported": 1,
+      "reconciliation": 5
+    }
+  },
+  "copied_artifacts": 2,
+  "foreign_key_issues": 0,
+  "legacy_unchanged": true,
+  "files_verified": 12
+}

@@ -1,0 +1,2 @@
+# Install using visudo -cf before activation; file ownership root:root and mode 0440.
+sar-cron ALL=(root) NOPASSWD: /usr/local/libexec/sar-start-schedule *

@@ -1,0 +1,32 @@
+{
+  "version": "legacy_v1",
+  "texts": {
+    "introducao": "Este relatório apresenta a análise técnica de tráfego de dados referente a {alvo}, focando no monitoramento dos links de conectividade. A análise abrange a conexão à rede metropolitana GigaFOR e o acesso ao backbone nacional da RNP.\n\nO objetivo principal é monitorar o comportamento do tráfego na interface de borda, identificar as taxas de ocupação dos links e garantir a disponibilidade dos serviços de rede.",
+    "sobre_rnp": "A Rede Nacional de Ensino e Pesquisa (RNP) é a organização responsável por prover a infraestrutura de rede avançada que conecta as instituições de ensino e pesquisa no Brasil. Ela viabiliza a colaboração científica e tecnológica, oferecendo serviços de conectividade de alta velocidade e baixa latência para todo o território nacional.",
+    "sobre_gigafor": "A GigaFOR é a Rede Metropolitana de Educação e Pesquisa de Fortaleza. Trata-se da infraestrutura de fibra óptica de alto desempenho que conecta a instituição ao Ponto de Presença da RNP no Ceará (PoP-CE), garantindo acesso ao backbone nacional com qualidade e redundância.",
+    "conclusao": "A análise do período de {periodo} demonstra o comportamento do tráfego de rede da {instituicao} na interface monitorada pelo PoP-CE. Os dados apresentados refletem o consumo real do link contratado, permitindo identificar padrões de uso, picos de demanda e eventuais ocorrências que possam impactar a qualidade dos serviços de conectividade.\n\nEste segmento do relatório foi gerado automaticamente pelo Sistema de Automatização de Relatórios (SAR) do Ponto de Presença da RNP no Ceará."
+  },
+  "issuer": {
+    "name": "ASSOCIAÇÃO GIGAFOR",
+    "cnpj": "57.735.222/0001-70",
+    "address": "AV. HUMBERTO MONTE",
+    "number": "S/N",
+    "city": "FORTALEZA",
+    "state": "CE",
+    "postal_code": "60.440-554",
+    "title": "CONECTIVIDADE A REDE GIGAFOR",
+    "payment_terms": "DEPOSITO BANCARIO:\nBANCO: BANCO DO BRASIL\nAGÊNCIA: 4439-3\nCONTA CORRENTE: 41468-9"
+  },
+  "colors": {
+    "title_background": [
+      230,
+      230,
+      230
+    ],
+    "title_text": [
+      30,
+      30,
+      30
+    ]
+  }
+}

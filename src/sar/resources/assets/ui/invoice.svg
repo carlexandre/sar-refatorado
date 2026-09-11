@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title">
+  <title id="title">Fatura comercial</title>
+  <path fill="#25b865" d="M15 8h32l18 18v40a7 7 0 0 1-7 7H15a7 7 0 0 1-7-7V15a7 7 0 0 1 7-7Z"/>
+  <path fill="#0b111a" d="M47 8v18h18Z"/>
+  <path fill="#0b111a" d="M38 34c-8 0-13 4-13 10 0 7 6 9 12 11 5 2 7 3 7 6 0 2-2 4-6 4-5 0-9-2-12-4l-4 7c3 3 8 5 13 6v6h7v-6c8-1 13-6 13-13 0-8-6-10-13-12-4-1-6-2-6-5 0-2 2-3 5-3 4 0 8 1 11 3l4-7c-4-2-8-3-12-4v-6h-7v7Z" transform="translate(1 -5) scale(.82)"/>
+</svg>

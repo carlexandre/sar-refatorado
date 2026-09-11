@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title">
+  <title id="title">Relatório PDF</title>
+  <path fill="#ef493d" d="M15 8h32l18 18v40a7 7 0 0 1-7 7H15a7 7 0 0 1-7-7V15a7 7 0 0 1 7-7Z"/>
+  <path fill="#0b111a" d="M47 8v18h18Z"/>
+  <text x="20" y="59" fill="#0b111a" font-family="Arial, sans-serif" font-size="18" font-weight="800">PDF</text>
+</svg>

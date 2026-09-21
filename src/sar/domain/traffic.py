@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import re
 from zoneinfo import ZoneInfo
 
 
@@ -62,15 +63,18 @@ def alerts(events: list[dict], recoveries: list[dict], name: str):
     return result
 
 
-def utilization(stats: dict, capacity: str) -> tuple[float, str]:
-    mbps = 1000.0
-    try:
-        value, unit = capacity.strip().split(maxsplit=1)
-        if "gbps" in unit.lower():
-            mbps = float(value.replace(",", ".")) * 1000
-        elif "mbps" in unit.lower():
-            mbps = float(value.replace(",", "."))
-    except (ValueError, AttributeError):
-        pass
-    percentage = max(stats.get("max_in", 0), stats.get("max_out", 0)) / mbps * 100 if mbps > 0 else 0
+def utilization(stats: dict, capacity: str) -> tuple[float | None, str]:
+    match = re.fullmatch(
+        r"\s*(\d+(?:[.,]\d+)?)\s*([mgt])\s*b(?:it)?(?:ps|/s)?\s*",
+        capacity or "",
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return None, "unknown"
+    mbps = float(match.group(1).replace(",", ".")) * {"m": 1, "g": 1000, "t": 1_000_000}[
+        match.group(2).lower()
+    ]
+    if mbps <= 0:
+        return None, "unknown"
+    percentage = max(stats.get("max_in", 0), stats.get("max_out", 0)) / mbps * 100
     return percentage, "critical" if percentage >= 90 else "high" if percentage >= 75 else "normal"

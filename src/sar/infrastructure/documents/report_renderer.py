@@ -316,8 +316,16 @@ class RelatorioPDF(FPDF):
 
         percentual, _ = utilization(stats, capacidade_str)
 
-        # Regras de Alerta ajustadas para o Percentual Real do Link
-        if percentual >= 90:
+        # Compare o pico medido com a capacidade declarada, nunca com o teto do gráfico.
+        if percentual is None:
+            icone = "[?]"
+            obs = (
+                f"O pico medido foi de {max_in:.1f} Mbps na entrada e {max_out:.1f} Mbps na saída. "
+                f"Não foi possível calcular a utilização porque a capacidade cadastrada "
+                f"({capacidade_str}) não tem uma unidade reconhecida. Confira o cadastro do link."
+            )
+            self.set_fill_color(245, 245, 245)
+        elif percentual >= 90:
             icone = "[!]"
             obs = f"O tráfego atingiu picos críticos no período analisado (Entrada: {max_in:.1f} Mbps / Saída: {max_out:.1f} Mbps), representando {percentual:.1f}% da capacidade contratada de {capacidade_str}. Recomenda-se avaliação da capacidade do link."
             self.set_fill_color(255, 235, 220)

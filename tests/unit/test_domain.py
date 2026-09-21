@@ -57,6 +57,26 @@ def test_utilization(peak, expected):
     assert utilization({"max_in": peak}, "1 Gbps")[1] == expected
 
 
+@pytest.mark.parametrize(
+    "capacity,peak,percentage,status",
+    [
+        ("10Gbps", 986.41, 9.8641, "normal"),
+        ("10 Gbps", 986.41, 9.8641, "normal"),
+        ("1Gbps", 986.41, 98.641, "critical"),
+        ("500 Mbps", 450, 90.0, "critical"),
+        ("1,5 Gbps", 750, 50.0, "normal"),
+    ],
+)
+def test_utilization_uses_declared_capacity(capacity, peak, percentage, status):
+    actual, actual_status = utilization({"max_in": 0, "max_out": peak}, capacity)
+    assert actual == pytest.approx(percentage)
+    assert actual_status == status
+
+
+def test_utilization_never_guesses_an_unrecognized_capacity():
+    assert utilization({"max_out": 986.41}, "capacidade desconhecida") == (None, "unknown")
+
+
 def test_alert_filter_duration_timezone():
     events = [
         {"name": "Bandwidth", "clock": "0", "r_eventid": "2"},

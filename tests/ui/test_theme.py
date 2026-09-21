@@ -1,3 +1,7 @@
+from types import SimpleNamespace
+from unittest.mock import Mock
+
+import sar.ui.theme as theme
 from sar.ui.theme import GLOBAL_STYLES, LIGHT_COMPONENT_STYLES, _styles_for
 from sar.ui.views.home import ADMIN_MODULE, MODULES
 
@@ -36,3 +40,30 @@ def test_theme_widget_styles_follow_the_current_widget_key():
 def test_user_module_has_a_distinct_people_icon():
     assert ADMIN_MODULE[2] == "users.svg"
     assert ADMIN_MODULE[2] not in {module[2] for module in MODULES}
+
+
+def test_theme_restores_browser_preference_after_new_session(monkeypatch):
+    browser = SimpleNamespace(
+        session_state={}, context=SimpleNamespace(cookies={"sar_color_theme": "light"}), html=Mock()
+    )
+    monkeypatch.setattr(theme, "st", browser)
+
+    theme.apply_theme()
+
+    assert browser.session_state["sar_color_theme"] == "light"
+    assert browser.html.call_count == 2
+    assert "color-scheme: light" in browser.html.call_args_list[0].args[0]
+    header = browser.html.call_args_list[1].args[0]
+    assert 'class="sar-app-header"' in header
+    assert "sar_color_theme=light" in header
+
+
+def test_theme_ignores_invalid_browser_preference(monkeypatch):
+    browser = SimpleNamespace(
+        session_state={}, context=SimpleNamespace(cookies={"sar_color_theme": "invalid"}), html=Mock()
+    )
+    monkeypatch.setattr(theme, "st", browser)
+
+    theme.apply_theme()
+
+    assert browser.session_state["sar_color_theme"] == "dark"

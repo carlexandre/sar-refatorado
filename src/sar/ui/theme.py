@@ -1,3 +1,5 @@
+import json
+
 import streamlit as st
 
 
@@ -49,6 +51,8 @@ PALETTES = {
         "color_scheme": "light",
     },
 }
+
+_THEME_COOKIE = "sar_color_theme"
 
 
 GLOBAL_STYLES = """
@@ -1030,12 +1034,17 @@ def render_theme_selector():
 
 def apply_theme():
     if "sar_color_theme" not in st.session_state:
-        st.session_state["sar_color_theme"] = "dark"
+        saved = st.context.cookies.get(_THEME_COOKIE)
+        st.session_state["sar_color_theme"] = saved if saved in PALETTES else "dark"
 
     theme = st.session_state["sar_color_theme"]
     if theme not in PALETTES:
         theme = "dark"
         st.session_state["sar_color_theme"] = theme
 
+    cookie = f"{_THEME_COOKIE}={theme}; Path=/; Secure; SameSite=Strict; Max-Age=31536000"
     st.html(_styles_for(theme))
-    st.html(APP_HEADER)
+    st.html(
+        APP_HEADER + f"<script>document.cookie = {json.dumps(cookie)};</script>",
+        unsafe_allow_javascript=True,
+    )

@@ -1,8 +1,23 @@
+import json
+
 import streamlit as st
 from sar.bootstrap import build
 from sar.security.redaction import public_error
 from sar.ui.controllers.context import Controller
 from sar.ui.theme import apply_theme, render_theme_selector
+
+
+_SESSION_COOKIE = "sar_session_token"
+
+
+def _write_session_cookie(token, *, reload_page=False):
+    """Share a validated server-side session with other browser tabs."""
+    value = token or ""
+    max_age = 8 * 60 * 60 if token else 0
+    cookie = f"{_SESSION_COOKIE}={value}; Path=/; Secure; SameSite=Strict; Max-Age={max_age}"
+    reload_script = "window.location.reload();" if reload_page else ""
+    st.html(f"<script>document.cookie = {json.dumps(cookie)};{reload_script}</script>",
+            unsafe_allow_javascript=True)
 
 
 def _render_profile_menu(app, user, identity, token):
@@ -37,7 +52,7 @@ def _render_profile_menu(app, user, identity, token):
             if st.button("Sair", key="sar_logout", icon=":material/logout:", width="stretch"):
                 app.auth.logout(token)
                 st.session_state.pop("sar_session_token", None)
-                st.rerun()
+                _write_session_cookie(None, reload_page=True)
 
 
 def main():
@@ -47,12 +62,14 @@ def main():
     try:
         app = build()
         if app.auth is not None:
-            token = st.session_state.get("sar_session_token")
+            token = st.session_state.get("sar_session_token") or st.context.cookies.get(_SESSION_COOKIE)
             try:
                 identity = app.auth.current(token)
             except Exception:
                 identity = None
             if identity is None:
+                if st.context.cookies.get(_SESSION_COOKIE):
+                    _write_session_cookie(None)
                 st.markdown("## Entrar no SAR")
                 with st.form("sar_login"):
                     username = st.text_input("Usuário")
@@ -60,11 +77,15 @@ def main():
                     submitted = st.form_submit_button("Entrar", type="primary")
                 if submitted:
                     try:
-                        st.session_state["sar_session_token"] = app.auth.login(username, password)
-                        st.rerun()
+                        token = app.auth.login(username, password)
+                        st.session_state["sar_session_token"] = token
+                        _write_session_cookie(token, reload_page=True)
+                        st.success("Login realizado. Abrindo o SAR...")
                     except Exception as error:
                         st.error(public_error(error))
                 return
+            st.session_state["sar_session_token"] = token
+            _write_session_cookie(token)
             user = app.repo.user(identity.subject)
             if user.must_change_password:
                 st.markdown("## Altere sua senha temporária")
@@ -80,8 +101,8 @@ def main():
                         try:
                             app.auth.change_password(token, current_password, new_password)
                             st.session_state.pop("sar_session_token", None)
+                            _write_session_cookie(None, reload_page=True)
                             st.success("Senha alterada. Entre novamente.")
-                            st.rerun()
                         except Exception as error:
                             st.error(public_error(error))
                 return

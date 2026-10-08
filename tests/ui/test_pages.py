@@ -86,6 +86,8 @@ def test_local_login_gates_the_streamlit_application(app, monkeypatch):
     at.text_input[0].set_value("admin")
     at.text_input[1].set_value("correct horse battery staple")
     next(button for button in at.button if button.label == "Entrar").click().run()
+    # AppTest does not execute the JavaScript browser reload after cookie creation.
+    at.run()
     assert not at.exception
     assert not at.error
     assert any(button.label == "Sair" for button in at.button)
@@ -101,3 +103,22 @@ def test_local_login_gates_the_streamlit_application(app, monkeypatch):
 def test_home_grid_uses_three_columns_for_user_admin_and_five_for_other_roles():
     assert _module_column_count(can_manage_users=True) == 3
     assert _module_column_count(can_manage_users=False) == 5
+
+
+def test_automation_requires_pair_and_shows_submission_diagnostics(app, monkeypatch):
+    from dataclasses import replace
+    app.repo.save_institution(replace(app.repo.institution(1), email_contato=""))
+    monkeypatch.setattr(sar.ui.main, "build", lambda: app)
+    at = AppTest.from_file(str(Path(__file__).resolve().parents[2] / "app.py"), default_timeout=20)
+    at.run()
+    next(button for button in at.button if button.label == "Automação de E-mail").click().run()
+    at._page_hash = next(page_hash for page_hash, data in at._registered_pages.items()
+                         if data.get("url_pathname") == "automacao")
+    at.run()
+    assert not at.exception and not at.error
+    assert not any(toggle.label == "Incluir Fatura Comercial no envio" for toggle in at.toggle)
+    at.multiselect[0].set_value([1]).run()
+    next(button for button in at.button if button.label == "Salvar Agendamento e Ativar").click().run()
+    assert not at.exception and not at.error
+    saved = app.repo.schedules()
+    assert len(saved) == 1 and saved[0].incluir_fatura

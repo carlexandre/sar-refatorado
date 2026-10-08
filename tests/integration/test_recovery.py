@@ -47,14 +47,14 @@ def test_reconcile_retry_is_separate_from_sending(app):
         service.reconcile(app.identities.current(), message["id"], "retry", "TEST-123")
 
 
-def test_pause_invalid_contact(app):
+def test_missing_contact_does_not_prevent_fixed_route_schedule(app):
     actor = app.identities.current()
     key = app.schedules.save(actor, Schedule(0, (1,), 5, "08:00"))
     app.repo.save_institution(replace(app.repo.institution(1), email_contato=""))
     app.schedules.toggle(actor, key)
     assert not app.repo.schedule(key).ativo
-    with pytest.raises(ValidationError):
-        app.schedules.toggle(actor, key)
+    app.schedules.toggle(actor, key)
+    assert app.repo.schedule(key).ativo
 
 
 def test_technical_group_edit_cannot_change_billing(app):
@@ -65,7 +65,7 @@ def test_technical_group_edit_cannot_change_billing(app):
     assert app.repo.group(1).fatura_para == group.fatura_para
 
 
-def test_dispatch_revalidates_owner_and_uses_verified_email(app):
+def test_dispatch_revalidates_owner_and_uses_fixed_route(app):
     actor = Identity(
         "directory-user",
         frozenset({"billing"}),
@@ -82,7 +82,8 @@ def test_dispatch_revalidates_owner_and_uses_verified_email(app):
     app.deliveries.identities = Provider()
     result = app.deliveries.run(actor, RunRequest((1,), today=date(2024, 3, 5)))
     assert result.status == "completed"
-    assert app.deliveries.notifications.messages[0].reply_to == "user@example.org"
+    assert app.deliveries.notifications.messages[0].reply_to is None
+    assert app.deliveries.notifications.messages[0].to == "svc.popce@rnp.br"
 
 
 def test_global_diagnostics_denied_to_scoped_admin(app):

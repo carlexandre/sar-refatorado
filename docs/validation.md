@@ -33,6 +33,22 @@ Nenhum e-mail foi enviado, credencial real testada ou crontab alterado. A cópia
 
 ## Verificações necessárias no ambiente corporativo
 
-Não executadas nesta estação: systemd/cron/sudoers/Nginx reais, conectividade Zabbix com CA corporativa, identidade de máquina no relay, entrega de e-mail, permissões POSIX efetivas entre contas de serviço, volume/backup cifrados e restauração operacional no servidor. As instruções e unidades estão entregues, mas sua ativação depende do provisionamento descrito em `deployment.md`.
+Não executadas nesta estação: systemd/cron/sudoers/Nginx reais, conectividade Zabbix com CA corporativa, autenticação Gmail com senha de aplicativo, entrega de e-mail, permissões POSIX efetivas entre contas de serviço, volume/backup cifrados e restauração operacional no servidor. As instruções e unidades estão entregues, mas sua ativação depende do provisionamento descrito em `deployment.md`.
 
 Autenticação local, RBAC persistido, administração de usuários, editor de templates e livro sequencial de emissões estão implementados. LDAP permanece deliberadamente como contrato de extensão: não há conexão LDAP apresentada como funcional nesta entrega.
+
+
+## Alteração Gmail — validação local em 07/10/2026
+
+Implementação restrita à pasta OneDrive `SAR - Refatoração`; nenhuma mudança na VM ou credencial real provisionada.
+
+- Python 3.12.14 do runtime local, usando dependências já existentes em `.venv/Lib/site-packages`; a venv copiada referencia outro perfil Windows e não foi recriada.
+- `pytest -q --disable-warnings`: 128 testes passaram. Há 401 avisos existentes de APIs/fontes dos renderizadores PDF.
+- `ruff check src tests tools deploy/provision-gmail-credential.py`: passou.
+- `tools/security_scan.py`: zero ocorrências.
+- `bandit -r src -ll`: nenhuma ocorrência média ou alta (duas baixas).
+- `git diff --check`: passou.
+
+Os testes simulam transporte SMTP; nenhum e-mail real foi enviado. Cobrem STARTTLS antes de login, credencial ausente/ilegível, rota fixa, dois PDFs MIME, rejeição e resultado ambíguo, fechamento após aceitação, limite SIZE, migração v2→v3, preservação de submissões antigas, reconciliação, integridade de artifacts, permissões atuais e falha do banco após aceitação. A UI foi verificada com AppTest, incluindo fatura obrigatória na automação.
+
+Para ativar na VM ainda faltam provisionamento da senha de aplicativo, atualização do ambiente não secreto, migração do banco após backup, validação das unidades na versão real do systemd e envio autorizado para `svc.popce@rnp.br`, conforme `deployment.md`.

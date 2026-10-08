@@ -42,7 +42,8 @@ def parser():
     selection = monthly.add_mutually_exclusive_group()
     selection.add_argument("--link-ids", help="Array JSON de IDs")
     selection.add_argument("--grupo-id", type=int)
-    monthly.add_argument("--incluir-fatura", action="store_true")
+    monthly.add_argument("--incluir-fatura", action="store_true", default=True,
+                         help="Compatibilidade: fatura e relatório são sempre enviados juntos")
     monthly.add_argument("--fatura-venc-dia", type=int, default=15)
     monthly.add_argument("--data-inicio")
     monthly.add_argument("--data-fim")

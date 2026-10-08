@@ -16,22 +16,22 @@
 | Grupo | Inclui descendentes recursivos no relatório; itens de fatura são exclusivos do grupo. |
 | Cadastros | Nome sugerido remove sufixos de rede e prefixo RG; host da instituição permanece fixo na edição. |
 | Perfil em lote | Dados comerciais e itens substituem os dados das instituições selecionadas, em uma transação. |
-| Automação UI | Instituição exige e-mail e perfil; grupo exige e-mail e ao menos uma instituição; sobreposição de instituições em agendamentos ativos conflita mesmo em horários distintos. |
-| CLI | Seleção individual permite instituição sem perfil; modo global exige perfil; grupo utiliza seu contato; sem dados não envia. |
-| Falha de fatura | Relatório pode ser enviado sozinho, como no legado, com resultado parcial explícito. Textos legados são preservados. |
+| Automação UI | Instituição exige perfil comercial e sequência de fatura; grupo exige sequência e ao menos uma instituição; sobreposição de instituições em agendamentos ativos conflita mesmo em horários distintos. |
+| CLI | Seleção individual permite instituição sem perfil; modo global exige perfil; destinatário fixo Gmail para todos os modos; sem dados não envia. |
+| Falha de fatura | Falha de qualquer PDF impede o envio daquele alvo; artifacts e resultado parcial ficam no histórico. Nunca envia relatório sozinho. |
 | Histórico | Filtros por instituição/grupo/data; três meses = 90 dias; lista de download limitada a 15 registros. |
 
 ## Correções explícitas
 
 - Sem fallback TLS inseguro e sem credenciais em `.env`.
-- E-mail com remetente fixo, Reply-To validado e CC GigaFOR.
+- E-mail Gmail com remetente e destinatário fixos, sem CC/Reply-To de usuário; fatura e relatório juntos obrigatoriamente. Assunto: `[SAR] - Fatura e Relatório Consolidado — Nome da instituição/grupo`. Corpo conforme modelo solicitado, com intervalo do relatório e vencimento em DD/MM/AAAA.
 - Texto cadastrado não é HTML executável. Busca por nome usa texto literal, evitando interpretação de regex fornecida pelo usuário.
 - Sem SQL na UI, envio SMTP na UI ou escrita de cron no processo web.
 - Datas inválidas, referências inexistentes e JSON malformado recebem erro claro.
 - PDFs não se sobrescrevem; identificador interno não é nome de instituição.
 - Histórico só registra instituições efetivamente incluídas.
 - Exclusões com dependências e reativação de agendamentos conflitantes são bloqueadas.
-- Pausa permanece disponível mesmo quando o destinatário deixou de ser elegível.
+- Pausa permanece disponível mesmo quando o alvo deixou de ser elegível.
 - Diagnóstico usa auditoria estruturada; não permite apagar o registro de auditoria nem expor crontab/logs brutos.
 - Resultado SMTP indeterminado exige reconciliação; não há promessa de entrega exatamente uma vez.
 

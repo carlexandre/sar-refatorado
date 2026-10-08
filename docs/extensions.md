@@ -8,7 +8,7 @@ Login usará LDAPS/StartTLS, rejeitará senha vazia e escapará filtros e DNs. C
 
 Mapear grupos LDAP para consultation, operations, billing e administration. Resolver hierarquia autorizada em `institution_ids` e `group_ids`; não interpretar `global_scope` a partir de formulário. Administração pode ser restrita a um escopo, exceto operações administrativas globais que devem exigir escopo global no adaptador corporativo.
 
-O responsável do agendamento é seu `owner_id`, preservado nas edições. O worker resolve sua identidade novamente antes de executar e enviar. Um responsável inválido bloqueia a operação; e-mail ausente/inválido em identidade ainda autorizada usa a caixa institucional para Reply-To.
+O responsável do agendamento é seu `owner_id`, preservado nas edições. O worker resolve sua identidade novamente antes de executar e enviar. Um responsável inválido bloqueia a operação; seu e-mail não altera o remetente, destinatário ou respostas da rota Gmail.
 
 ## Templates
 
@@ -22,4 +22,4 @@ Perfil comercial e itens permanecem no banco, separados de estilo e emissor. Nã
 
 `Reports.generate`, `Invoices.generate` e `Deliveries` estão separados. O fluxo de revisão poderá gerar artefatos e mensagens pendentes antes da autorização explícita de envio. O runner é independente do Streamlit.
 
-Para múltiplos servidores, substituir SQLite/lock de arquivo por banco transacional e mecanismo de claim/lease apropriados, mantendo interfaces e a outbox. Não mover SQLite para NFS. `submitted` significa aceito pelo relay, não entregue à caixa postal. Mesmo com broker, reconciliação de submissão SMTP ambígua permanece necessária.
+Para múltiplos servidores, substituir SQLite/lock de arquivo por banco transacional e mecanismo de claim/lease apropriados, mantendo interfaces e a outbox. Não mover SQLite para NFS. `submitted` significa aceito pelo Gmail via SMTP, não entregue à caixa postal. Mesmo com broker, reconciliação de submissão SMTP ambígua permanece necessária.

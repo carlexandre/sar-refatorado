@@ -13,10 +13,12 @@ class Settings:
     zabbix_url: str = ""
     ca_bundle: str | None = None
     credentials_dir: Path | None = None
-    smtp_host: str = ""
+    smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
     smtp_tls: str = "starttls"
-    mail_from: str = ""
+    smtp_user: str = "svc.popce@gmail.com"
+    mail_from: str = "svc.popce@gmail.com"
+    mail_to: str = "svc.popce@rnp.br"
     mail_reply_to: str = ""
     mail_cc: str = ""
     timezone: str = "America/Fortaleza"
@@ -67,10 +69,12 @@ class Settings:
                 credentials_dir=Path(os.environ["CREDENTIALS_DIRECTORY"])
                 if os.getenv("CREDENTIALS_DIRECTORY")
                 else None,
-                smtp_host=os.getenv("SAR_SMTP_HOST", ""),
+                smtp_host=os.getenv("SAR_SMTP_HOST", "smtp.gmail.com"),
                 smtp_port=int(os.getenv("SAR_SMTP_PORT", "587")),
                 smtp_tls=os.getenv("SAR_SMTP_TLS", "starttls"),
-                mail_from=os.getenv("SAR_MAIL_FROM", ""),
+                smtp_user=os.getenv("SAR_SMTP_USER", "svc.popce@gmail.com"),
+                mail_from=os.getenv("SAR_MAIL_FROM", "svc.popce@gmail.com"),
+                mail_to=os.getenv("SAR_MAIL_TO", "svc.popce@rnp.br"),
                 mail_reply_to=os.getenv("SAR_MAIL_REPLY_TO", ""),
                 mail_cc=os.getenv("SAR_MAIL_CC", ""),
                 timezone=os.getenv("SAR_TIMEZONE", "America/Fortaleza"),

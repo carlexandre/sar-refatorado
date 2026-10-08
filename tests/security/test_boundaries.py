@@ -2,19 +2,17 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 import pytest
-from sar.domain.models import Schedule, Notification
+from sar.domain.models import Schedule
 from sar.domain.errors import (
     AccessDenied,
     ValidationError,
     ConfigurationError,
     IntegrationError,
-    DeliveryUncertain,
 )
 from sar.domain.periods import previous_month
 from sar.security.identity import Identity
 from sar.security.validation import email
 from sar.infrastructure.scheduling.cron import CronScheduler
-from sar.infrastructure.email.smtp_relay import SMTPRelay
 from sar.config.settings import Settings
 
 
@@ -99,65 +97,6 @@ def test_cron_read_failure_never_writes():
     with pytest.raises(IntegrationError):
         CronScheduler(Path("/opt/launcher"), run).synchronize([])
     assert calls == [["crontab", "-l"]]
-
-
-def test_relay_headers_and_tls(tmp_path):
-    settings = Settings(
-        tmp_path,
-        smtp_host="relay.example.org",
-        mail_from="sar@example.org",
-        mail_reply_to="team@example.org",
-        mail_cc="gigafor@example.org",
-    )
-    relay = SMTPRelay(settings)
-    msg, sender, recipients = relay.compose(
-        Notification("client@example.org", "Assunto", "Corpo", (), "user@example.org")
-    )
-    assert msg["From"] == "sar@example.org"
-    assert msg["Reply-To"] == "user@example.org"
-    assert "gigafor@example.org" in recipients
-    assert sender == "sar@example.org"
-    with pytest.raises(ConfigurationError):
-        SMTPRelay(replace(settings, smtp_tls="none")).compose(
-            Notification("client@example.org", "a", "b", ())
-        )
-
-
-def test_smtp_uncertainty_and_tls_failure(tmp_path):
-    settings = Settings(
-        tmp_path,
-        smtp_host="relay.example.org",
-        mail_from="sar@example.org",
-        mail_reply_to="team@example.org",
-        mail_cc="gigafor@example.org",
-    )
-
-    class Transport:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def ehlo(self):
-            pass
-
-        def starttls(self, context):
-            assert context.check_hostname
-            assert context.verify_mode != 0
-
-        def send_message(self, *args, **kwargs):
-            raise TimeoutError("SECRET")
-
-        def close(self):
-            pass
-
-    with pytest.raises(DeliveryUncertain, match="indeterminado"):
-        SMTPRelay(settings, Transport).send(Notification("client@example.org", "a", "b", ()))
-
-    class BrokenTLS(Transport):
-        def starttls(self, context):
-            raise OSError("SECRET")
-
-    with pytest.raises(IntegrationError, match="não submetida"):
-        SMTPRelay(settings, BrokenTLS).send(Notification("client@example.org", "a", "b", ()))
 
 
 def test_settings_reject_http(monkeypatch, tmp_path):

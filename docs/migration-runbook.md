@@ -33,7 +33,7 @@ O script `tools/verify_local_migration.py` fez o ensaio desta cópia em diretór
 
 ## Mensagens e falhas
 
-`submitted` significa aceitação pelo relay, não entrega final. `blocked` indica que não houve envio confirmado por configuração/autorização ou falha anterior à submissão. `indeterminate` exige consulta dos logs do relay pelo Message-ID; `interrupted` identifica processo terminado antes do encerramento.
+`submitted` significa aceitação SMTP, não entrega final. `blocked` indica que não houve envio confirmado por configuração/autorização ou falha anterior à submissão. `indeterminate` exige consulta dos registros SMTP/Gmail pelo Message-ID; `interrupted` identifica processo terminado antes do encerramento.
 
 ```sh
 sar outbox-list

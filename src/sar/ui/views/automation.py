@@ -102,6 +102,9 @@ def render(controller):
                     st.success("Ressincronização solicitada ao serviço Linux.")
             st.markdown("#### Execuções automáticas")
             _diagnostic_table(data["executions"], "Nenhuma execução registrada.")
+            st.markdown("#### Submissões de e-mail")
+            _diagnostic_table(data["outbox"], "Nenhuma submissão registrada.")
+            st.caption("Aceito pelo Gmail confirma apenas a submissão SMTP. O encaminhamento é feito externamente.")
             st.markdown("#### Auditoria operacional")
             _diagnostic_table(data["audit"], "Nenhum evento de auditoria registrado.")
             st.caption("O registro de auditoria é preservado; erros internos e credenciais não são exibidos.")
@@ -124,11 +127,11 @@ def schedule_form(controller, existing=None):
     ids, group_id = [], None
     if mode == "Por Grupo":
         if not groups:
-            st.warning("Nenhum grupo elegível: cadastre e-mail e vincule instituições.")
+            st.warning("Nenhum grupo elegível: vincule instituições.")
             return
         choices = list(group_labels)
         group_id = st.selectbox(
-            "Grupos com E-mail e instituições vinculadas:",
+            "Grupos com instituições vinculadas:",
             choices,
             format_func=group_labels.get,
             index=choices.index(existing.grupo_id) if existing and existing.grupo_id in choices else 0,
@@ -137,10 +140,10 @@ def schedule_form(controller, existing=None):
         )
     else:
         if not links:
-            st.warning("Nenhuma instituição elegível: são necessários e-mail e perfil de fatura.")
+            st.warning("Nenhuma instituição elegível: é necessário perfil de fatura.")
             return
         ids = st.multiselect(
-            "Apenas instituições com E-mail e Fatura cadastrados estão disponíveis:",
+            "Instituições com perfil de fatura cadastrado:",
             list(link_labels),
             format_func=link_labels.get,
             default=[i for i in existing.link_ids if i in link_labels] if existing else [],
@@ -178,21 +181,12 @@ def schedule_form(controller, existing=None):
             date.fromisoformat(existing.data_fim) if existing and existing.data_fim else date.today(),
             key=f"end_{key}",
         ).isoformat()
-    include = st.toggle(
-        "Incluir Fatura Comercial no envio",
-        value=bool(existing.incluir_fatura) if existing else True,
-        key=f"invoice_{key}",
+    include, prefix = True, "FAT"
+    st.caption("Envio para svc.popce@rnp.br com fatura e relatório juntos. A numeração é definida em Faturas → Sequências.")
+    due = st.number_input(
+        "Dia de vencimento da fatura:", min_value=1, max_value=28,
+        value=existing.fatura_venc_dia if existing else 15, key=f"due_{key}",
     )
-    prefix, due = "FAT", 15
-    if include:
-        st.caption("A numeração e o prefixo são definidos em Faturas → Sequências.")
-        due = st.number_input(
-            "Dia de vencimento da fatura:",
-            min_value=1,
-            max_value=28,
-            value=existing.fatura_venc_dia if existing else 15,
-            key=f"due_{key}",
-        )
     if st.button(
         "Salvar Alterações" if existing else "Salvar Agendamento e Ativar", type="primary", key=f"save_{key}"
     ):

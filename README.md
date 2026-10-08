@@ -1,8 +1,10 @@
 # SAR — versão refatorada
 
-Monólito modular Python: Streamlit apresenta as telas; os serviços executam as regras; adaptadores implementam SQLite, Zabbix, documentos, arquivos e SMTP Relay. Workers e CLI usam os mesmos serviços.
+Monólito modular Python: Streamlit apresenta as telas; os serviços executam as regras; adaptadores implementam SQLite, Zabbix, documentos, arquivos e SMTP Gmail. Workers e CLI usam os mesmos serviços.
 
 A versão original permanece separada. Nenhum módulo legado é importado pela aplicação nova. A aplicação oferece login local, RBAC, templates de fatura herdáveis e numeração transacional. O contrato de identidade está preparado para um adaptador LDAP posterior.
+
+Comece pelo [Guia de manutenção](docs/guia-manutencao.md): requisitos, mapa dos módulos, fluxos e diagnóstico para novos mantenedores.
 
 ## Instalação local
 
@@ -34,12 +36,13 @@ Em Linux, use `.venv/bin/python` e `.venv/bin/sar`. Para produção, instale `re
 - `SAR_DATA_DIR`: obrigatório; banco, artifacts e locks. Nunca usar OneDrive/NFS em produção.
 - `SAR_ACCESS_MODE=local`: login com senha Argon2id, sessões revogáveis e RBAC no SQLite. `internal_team` permanece somente para transição/testes em perímetro confiável; não autentica pessoas.
 - `SAR_ZABBIX_URL`: URL HTTPS sem credenciais; `SAR_CA_BUNDLE`: CA corporativa, quando necessária. Sem CA configurada, aplica-se a cadeia de confiança padrão, nunca `verify=False`.
-- `CREDENTIALS_DIRECTORY`: fornecido pelo systemd; contém `zabbix-token` ou `zabbix-user` e `zabbix-password`. Segredos não são copiados do `.env` legado.
-- `SAR_SMTP_HOST`, `SAR_SMTP_PORT`, `SAR_SMTP_TLS=starttls|implicit`: relay corporativo com TLS obrigatório.
-- `SAR_MAIL_FROM`, `SAR_MAIL_REPLY_TO`, `SAR_MAIL_CC`: remetente SAR, caixa institucional e grupo GigaFOR. São endereços de configuração, não senhas.
+- `CREDENTIALS_DIRECTORY`: fornecido pelo systemd; contém `zabbix-token` ou `zabbix-user` e `zabbix-password`, e `gmail-app-password` nos workers. Segredos não são copiados do `.env` legado.
+- `SAR_SMTP_HOST=smtp.gmail.com`, `SAR_SMTP_PORT=587`, `SAR_SMTP_TLS=starttls`: autenticação Gmail após TLS.
+- `SAR_SMTP_USER=svc.popce@gmail.com`, `SAR_MAIL_FROM=svc.popce@gmail.com`, `SAR_MAIL_TO=svc.popce@rnp.br`: rota fixa validada pelo adaptador. Sem CC/BCC ou Reply-To de usuário.
+- `gmail-app-password`: senha de aplicativo lida somente de `CREDENTIALS_DIRECTORY`; não há senha SMTP em código, `.env` ou variável de ambiente.
 - `SAR_TIMEZONE=America/Fortaleza`: o fuso do servidor cron deve ser o mesmo.
 
-Sem Zabbix configurado, consultas falham de forma segura; cadastros existentes e histórico continuam disponíveis. Sem relay configurado, documentos ainda podem ser gerados e as mensagens ficam bloqueadas na outbox. A entrega corporativa não está provisionada por este repositório.
+Sem Zabbix configurado, consultas falham de forma segura; cadastros existentes e histórico continuam disponíveis. Sem credencial Gmail, os documentos continuam sendo gerados e as mensagens ficam bloqueadas na outbox. A credencial será provisionada na VM conforme [implantação](docs/deployment.md#gmail-e-credenciais-systemd).
 
 ## Operação
 
@@ -51,7 +54,9 @@ sar diagnostics --as-user admin
 sar outbox-list --as-user admin
 ```
 
-`monthly` envia e-mails se o relay estiver configurado. Sem seleção, processa instituições com perfil comercial, como a CLI anterior. Não use esses comandos como teste contra destinatários reais.
+`monthly` envia sempre a fatura e o relatório juntos, em uma mensagem por instituição/grupo, para `svc.popce@rnp.br`. O assunto tem o formato `[SAR] - Fatura e Relatório Consolidado — Nome da instituição/grupo`; o corpo saúda a equipe e informa o período do relatório e o vencimento da fatura. A flag `--incluir-fatura` é mantida por compatibilidade, mas já é o padrão obrigatório. Sem seleção, processa instituições com perfil comercial. Execute via systemd para receber a credencial, conforme [implantação](docs/deployment.md).
+
+`submitted` com `smtp_accepted_at` significa **aceito pelo Gmail via SMTP**, sem confirmar recebimento ou encaminhamento. Após registrar o resultado local, o SAR encerra. O processamento posterior pertence à aplicação low-code. A outbox aparece em Automação → Diagnóstico e no comando `outbox-list`.
 
 Antes de emitir ou agendar uma fatura, configure em **Faturas → Sequências** o número inicial de cada instituição/grupo. Templates são compostos na ordem padrão, grupos ancestrais e instituição. Emissões manuais e automáticas compartilham a mesma série e aparecem no livro de emissões.
 

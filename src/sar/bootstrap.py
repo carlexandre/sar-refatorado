@@ -71,7 +71,7 @@ def build(settings=None, *, monitoring=None, documents=None, notifications=None,
     if notifications is None:
         from sar.infrastructure.email.smtp_relay import SMTPRelay
 
-        notifications = SMTPRelay(settings)
+        notifications = SMTPRelay(settings, secrets=RuntimeCredentials(settings.credentials_dir))
     reports = Reports(repo, monitoring, documents, store, policy)
     templates = InvoiceTemplateService(repo, policy)
     invoices = Invoices(
@@ -80,7 +80,7 @@ def build(settings=None, *, monitoring=None, documents=None, notifications=None,
     registrations = Registrations(repo, monitoring, policy)
     history = History(repo, store, policy)
     schedules = Schedules(repo, policy)
-    deliveries = Deliveries(repo, reports, invoices, history, notifications, identities, policy)
+    deliveries = Deliveries(repo, reports, invoices, history, notifications, identities, policy, settings.mail_to)
     return Application(
         settings,
         repo,

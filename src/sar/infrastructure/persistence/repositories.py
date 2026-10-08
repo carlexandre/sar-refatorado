@@ -278,9 +278,14 @@ class Repository:
                 if issued and value.initial_value != current["initial_value"]:
                     raise ValidationError("O número inicial não pode mudar após a primeira emissão.")
                 changed = conn.execute(
-                    """UPDATE invoice_sequences SET prefix=?,padding=?,initial_value=?,revision=revision+1,
-                    updated_by=?,updated_at=CURRENT_TIMESTAMP WHERE id=? AND revision=?""",
-                    (value.prefix, value.padding, value.initial_value, value.updated_by, value.id, value.revision),
+                    """UPDATE invoice_sequences SET prefix=?,padding=?,initial_value=?,next_value=?,
+                    revision=revision+1,updated_by=?,updated_at=CURRENT_TIMESTAMP
+                    WHERE id=? AND revision=?""",
+                    (
+                        value.prefix, value.padding, value.initial_value,
+                        current["next_value"] if issued else value.initial_value,
+                        value.updated_by, value.id, value.revision,
+                    ),
                 ).rowcount
                 if changed != 1:
                     raise ConcurrencyError("A sequência foi alterada por outro usuário.")
@@ -611,10 +616,12 @@ class Repository:
                 == 1
             )
 
-    def message_status(self, message_id, status):
+    def message_status(self, message_id, status, *, smtp_accepted=False):
         with self.database.connect() as conn:
             conn.execute(
-                "UPDATE outbox SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?", (status, message_id)
+                "UPDATE outbox SET status=?,updated_at=CURRENT_TIMESTAMP,"
+                "smtp_accepted_at=CASE WHEN ? THEN CURRENT_TIMESTAMP ELSE smtp_accepted_at END WHERE id=?",
+                (status, smtp_accepted and status == "submitted", message_id)
             )
 
     def reconcile_message(self, message_id, status):

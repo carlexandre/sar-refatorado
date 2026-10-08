@@ -8,7 +8,7 @@ from datetime import date
 class RunRequest:
     link_ids: tuple[int, ...] = ()
     group_id: int | None = None
-    include_invoice: bool = False
+    include_invoice: bool = True
     invoice_due_day: int = 15
     start: str | None = None
     end: str | None = None

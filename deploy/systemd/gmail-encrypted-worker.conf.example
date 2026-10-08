@@ -1,0 +1,6 @@
+# systemd >=250: copiar como sar-worker@.service.d/gmail.conf; provisionar a credencial antes.
+[Service]
+# Remove somente a fonte Gmail em texto; preserva a credencial Zabbix da unidade.
+LoadCredential=
+LoadCredential=zabbix-token:/etc/sar/credentials/zabbix-token
+LoadCredentialEncrypted=gmail-app-password:/etc/credstore.encrypted/sar-gmail-app-password

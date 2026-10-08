@@ -11,7 +11,7 @@ WorkingDirectory=/opt/sar
 EnvironmentFile=/etc/sar/sar.env
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=MPLCONFIGDIR=/var/lib/sar/matplotlib
-LoadCredentialEncrypted=zabbix-token:/etc/credstore.encrypted/sar-zabbix-token
+LoadCredential=zabbix-token:/etc/sar/credentials/zabbix-token
 ExecStart=/opt/sar/.venv/bin/python -m streamlit run /opt/sar/app.py --server.address=127.0.0.1
 Restart=on-failure
 RestartSec=5

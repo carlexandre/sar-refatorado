@@ -1,3 +1,4 @@
+import json
 from sar.domain.errors import ValidationError
 from sar.security.validation import text
 
@@ -8,10 +9,23 @@ class Recovery:
 
     def messages(self, identity):
         self.policy.require(identity, "admin.diagnostics")
-        return [
-            {key: row[key] for key in ("id", "execution_id", "status", "attempts", "updated_at")}
-            for row in self.repo.outbox()
-        ]
+        messages = []
+        for row in self.repo.outbox():
+            payload = json.loads(row["payload"])
+            item = {key: row[key] for key in (
+                "id", "execution_id", "status", "attempts", "updated_at", "smtp_accepted_at"
+            )}
+            item.update(target=payload.get("target_name"), recipient=payload.get("to"),
+                        transport=payload.get("transport", "legacy_smtp"))
+            if row["status"] == "submitted":
+                item["result"] = (
+                    "Aceito pelo Gmail (SMTP)" if row["smtp_accepted_at"]
+                    and payload.get("transport") == "gmail_smtp" else "Submissão registrada; sem confirmação Gmail"
+                )
+            else:
+                item["result"] = row["status"]
+            messages.append(item)
+        return messages
 
     def reconcile(self, identity, message_id, decision, reason):
         self.policy.require(identity, "admin.diagnostics")

@@ -1,4 +1,5 @@
 from dataclasses import replace
+from sar.application.services.recovery import Recovery
 from sar.domain.errors import ValidationError, NotFound
 from sar.security.validation import schedule as validate_schedule
 
@@ -33,15 +34,13 @@ class Schedules:
         links = [
             i
             for i in self.repo.institutions()
-            if i.email_contato.strip()
-            and self.repo.profile(i.id)
+            if self.repo.profile(i.id)
             and (identity.global_scope or i.id in identity.institution_ids)
         ]
         groups = [
             g
             for g in self.repo.groups()
-            if g.email_contato.strip()
-            and self.repo.group_links(g.id)
+            if self.repo.group_links(g.id)
             and (
                 identity.global_scope
                 or (
@@ -54,6 +53,8 @@ class Schedules:
 
     def save(self, identity, schedule):
         validate_schedule(schedule)
+        if not schedule.incluir_fatura:
+            raise ValidationError("Agendamentos Gmail exigem fatura e relatório juntos.")
         self._authorize(identity, schedule)
         if schedule.id:
             previous = self.repo.schedule(schedule.id)
@@ -66,9 +67,9 @@ class Schedules:
         links, groups = self.eligible(identity)
         if schedule.grupo_id:
             if schedule.grupo_id not in {g.id for g in groups}:
-                raise ValidationError("Grupo sem contato ou instituições elegíveis.")
+                raise ValidationError("Grupo sem instituições elegíveis.")
         elif not set(schedule.link_ids) <= {i.id for i in links}:
-            raise ValidationError("Instituições precisam de e-mail e perfil de fatura.")
+            raise ValidationError("Instituições precisam de perfil de fatura.")
         if schedule.incluir_fatura:
             targets = [(schedule.grupo_id, True)] if schedule.grupo_id else [
                 (link_id, False) for link_id in schedule.link_ids
@@ -115,4 +116,5 @@ class Schedules:
             "scheduler": self.repo.scheduler_state(),
             "executions": self.repo.executions(),
             "audit": self.repo.audit_recent(),
+            "outbox": Recovery(self.repo, self.policy).messages(identity),
         }

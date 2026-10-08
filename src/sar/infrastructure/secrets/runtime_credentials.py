@@ -9,7 +9,7 @@ class RuntimeCredentials:
         self.directory = directory
 
     def get(self, name: str) -> str | None:
-        if name not in {"zabbix-token", "zabbix-user", "zabbix-password"}:
+        if name not in {"zabbix-token", "zabbix-user", "zabbix-password", "gmail-app-password"}:
             raise ConfigurationError("Credencial desconhecida.")
         if not self.directory:
             return None

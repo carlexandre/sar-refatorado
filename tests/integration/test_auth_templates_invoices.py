@@ -7,20 +7,20 @@ import uuid
 
 import pytest
 
-from sar.domain.errors import AccessDenied
+from sar.domain.errors import AccessDenied, ValidationError
 from sar.domain.models import AppUser, Group, InvoiceTemplateOverride
 from sar.infrastructure.persistence.sqlite import initialize
 from sar.security.authentication import AuthenticationService, IdentityDirectory, PasswordHasher
 
 
-def test_existing_v1_database_is_migrated_to_v2(tmp_path):
+def test_existing_v1_database_is_migrated_to_latest(tmp_path):
     path = tmp_path / "sar.db"
     initial = Path(__file__).resolve().parents[2] / "src" / "sar" / "migrations" / "001_initial.sql"
     with sqlite3.connect(path) as connection:
         connection.executescript(initial.read_text(encoding="utf-8"))
     initialize(path)
     with sqlite3.connect(path) as connection:
-        assert connection.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall() == [(1,), (2,)]
+        assert connection.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall() == [(1,), (2,), (3,)]
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
@@ -72,6 +72,26 @@ def test_template_inheritance_and_optimistic_revision(app):
         app.templates.save(actor, replace(current, observation_text="Stale"))
     assert app.repo.template_override(link_id=1).id == template_id
 
+
+def test_sequence_initial_value_can_change_before_first_issuance(app):
+    actor = app.identities.current()
+
+    saved = app.invoices.save_sequence(actor, 1, 5, revision=1)
+
+    sequence = app.repo.invoice_sequence(1)
+    assert saved == sequence.id
+    assert sequence.initial_value == 5
+    assert sequence.next_value == 5
+    assert sequence.revision == 2
+
+def test_sequence_initial_value_remains_locked_after_first_issuance(app):
+    actor = app.identities.current()
+    today = date(2026, 9, 10)
+    app.invoices.issue(actor, 1, today, today, "setembro de 2026", "manual:sequence-lock")
+    current = app.repo.invoice_sequence(1)
+
+    with pytest.raises(ValidationError, match="não pode mudar após a primeira emissão"):
+        app.invoices.save_sequence(actor, 1, 5, revision=current.revision)
 
 def test_preview_concurrency_idempotency_and_void(app):
     actor = app.identities.current()

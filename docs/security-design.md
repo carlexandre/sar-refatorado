@@ -12,11 +12,11 @@ Roles são uma allowlist do código e suas atribuições/escopos ficam no SQLite
 
 ## Segredos e TLS
 
-Credenciais de execução provêm de `CREDENTIALS_DIRECTORY`; no Linux, arquivos com leitura para grupo/outros são recusados. Systemd `LoadCredentialEncrypted` decripta o segredo para a unidade em runtime. O cofre corporativo poderá provisionar essas credenciais; a chave não fica ao lado do código. Senhas de usuário LDAP nunca serão utilizadas para SMTP.
+Credenciais de execução provêm de `CREDENTIALS_DIRECTORY`; no Linux, arquivos com leitura para grupo/outros são recusados. Systemd 249 usa `LoadCredential` com fontes root `0600` fora do projeto; >=250 pode usar `LoadCredentialEncrypted`. A senha de aplicativo Gmail é lida apenas no envio, pelo nome `gmail-app-password`. Não há senha em `.env`, argumentos, banco ou logs, e a UI pode funcionar sem essa credencial. Senhas de usuários SAR nunca serão utilizadas para SMTP.
 
 Zabbix usa somente HTTPS, timeout de 30 segundos e no máximo uma repetição de consulta de leitura após erro transitório de rede. Autenticação e erro TLS não são repetidos. A conta/token precisa ser limitada a leitura pela administração do Zabbix; o software não cria essa permissão no servidor.
 
-SMTP usa TLS implícito ou StartTLS obrigatório, hostname e CA validados. Não há `login()`. O relay precisa restringir origem/remetente e não pode ser aberto. SPF, DKIM e DMARC são responsabilidade do domínio corporativo; Reply-To não garante entregabilidade.
+SMTP Gmail usa `smtp.gmail.com:587`, STARTTLS obrigatório, hostname e CA validados, seguido de `login()` com senha de aplicativo. Remetente/envelope `svc.popce@gmail.com` e destinatário único `svc.popce@rnp.br` são fixos; sem CC/BCC ou Reply-To de usuário. Exige um relatório e uma fatura, com integridade verificada antes da submissão. Aceitação SMTP encerra o transporte; processamento low-code é externo.
 
 ## Dados e operação
 
